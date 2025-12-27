@@ -123,7 +123,7 @@ export function ControlPanel({
           onValueChange={([value]) => onPixelSizeChange(value)}
           min={1}
           max={16}
-          step={1}
+          step={0.5}
           className="w-full"
         />
       </div>
