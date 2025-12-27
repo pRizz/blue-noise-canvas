@@ -50,18 +50,29 @@ export function BlueNoiseCanvas({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    renderBlueNoisePoints(
+    // Cancel any previous animation
+    const cancelFn = renderBlueNoisePoints(
       ctx,
       points,
       dimension,
       dimension,
       pixelSize,
       foregroundColor,
-      backgroundColor
+      backgroundColor,
+      true, // animated
+      25,   // chunkSize
+      () => {
+        onCanvasReady(canvas);
+      }
     );
 
-    onCanvasReady(canvas);
     onPointCountChange?.(points.length);
+
+    return () => {
+      if (typeof cancelFn === 'function') {
+        cancelFn();
+      }
+    };
   }, [points, dimension, pixelSize, foregroundColor, backgroundColor, onCanvasReady, onPointCountChange]);
 
   return (
