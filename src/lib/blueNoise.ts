@@ -40,7 +40,7 @@ export function getBlueNoiseParams(
   return { gridWidth, gridHeight, numPoints };
 }
 
-// Render pre-generated points to canvas
+// Render pre-generated points to canvas with optional chunked animation
 export function renderBlueNoisePoints(
   ctx: CanvasRenderingContext2D,
   points: Point[],
@@ -48,17 +48,18 @@ export function renderBlueNoisePoints(
   height: number,
   pixelSize: number,
   foregroundColor: string,
-  backgroundColor: string
-): void {
-  // Get colors
+  backgroundColor: string,
+  animated: boolean = false,
+  chunkSize: number = 25,
+  onComplete?: () => void
+): (() => void) | void {
   const fg = hexToRgb(foregroundColor);
   const bg = hexToRgb(backgroundColor);
-  
-  // Create image data
+
+  // Create base image data with background
   const imageData = ctx.createImageData(width, height);
   const data = imageData.data;
 
-  // Fill background
   for (let i = 0; i < data.length; i += 4) {
     data[i] = bg.r;
     data[i + 1] = bg.g;
@@ -66,26 +67,68 @@ export function renderBlueNoisePoints(
     data[i + 3] = 255;
   }
 
-  // Draw points as pixels
-  for (const point of points) {
-    // Points are in grid coordinates (0 to gridWidth/gridHeight).
-    // Snap to a grid cell so intensity maps 1:1 to filled cells.
-    const startX = Math.floor(point.x) * pixelSize;
-    const startY = Math.floor(point.y) * pixelSize;
+  if (!animated || points.length === 0) {
+    // Immediate render
+    for (const point of points) {
+      drawPoint(data, point, width, height, pixelSize, fg);
+    }
+    ctx.putImageData(imageData, 0, 0);
+    onComplete?.();
+    return;
+  }
 
-    for (let py = 0; py < pixelSize && startY + py < height; py++) {
-      for (let px = 0; px < pixelSize && startX + px < width; px++) {
-        const x = startX + px;
-        const y = startY + py;
-        const idx = (y * width + x) * 4;
-        
-        data[idx] = fg.r;
-        data[idx + 1] = fg.g;
-        data[idx + 2] = fg.b;
-        data[idx + 3] = 255;
-      }
+  // Animated chunked render
+  let currentIndex = 0;
+  let cancelled = false;
+
+  function renderNextChunk() {
+    if (cancelled) return;
+
+    const endIndex = Math.min(currentIndex + chunkSize, points.length);
+    
+    for (let i = currentIndex; i < endIndex; i++) {
+      drawPoint(data, points[i], width, height, pixelSize, fg);
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    currentIndex = endIndex;
+
+    if (currentIndex < points.length) {
+      requestAnimationFrame(renderNextChunk);
+    } else {
+      onComplete?.();
     }
   }
 
-  ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(renderNextChunk);
+
+  // Return cancel function
+  return () => {
+    cancelled = true;
+  };
+}
+
+function drawPoint(
+  data: Uint8ClampedArray,
+  point: Point,
+  width: number,
+  height: number,
+  pixelSize: number,
+  fg: { r: number; g: number; b: number }
+) {
+  const startX = Math.floor(point.x) * pixelSize;
+  const startY = Math.floor(point.y) * pixelSize;
+
+  for (let py = 0; py < pixelSize && startY + py < height; py++) {
+    for (let px = 0; px < pixelSize && startX + px < width; px++) {
+      const x = startX + px;
+      const y = startY + py;
+      const idx = (y * width + x) * 4;
+      
+      data[idx] = fg.r;
+      data[idx + 1] = fg.g;
+      data[idx + 2] = fg.b;
+      data[idx + 3] = 255;
+    }
+  }
 }
