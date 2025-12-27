@@ -1,75 +1,8 @@
-// Blue noise generation using Mitchell's best-candidate algorithm
-// This creates a pattern where points are evenly distributed with no low-frequency components
+// Blue noise generation utilities
 
 interface Point {
   x: number;
   y: number;
-}
-
-// Seeded random number generator for reproducibility
-function createSeededRandom(seed: number) {
-  return function () {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return seed / 0x7fffffff;
-  };
-}
-
-// Calculate squared distance between two points
-function distanceSquared(p1: Point, p2: Point): number {
-  const dx = p1.x - p2.x;
-  const dy = p1.y - p2.y;
-  return dx * dx + dy * dy;
-}
-
-// Find minimum distance from a point to all existing points
-function minDistanceToPoints(candidate: Point, points: Point[]): number {
-  if (points.length === 0) return Infinity;
-  
-  let minDist = Infinity;
-  for (const point of points) {
-    const dist = distanceSquared(candidate, point);
-    if (dist < minDist) {
-      minDist = dist;
-    }
-  }
-  return Math.sqrt(minDist);
-}
-
-// Generate blue noise points using Mitchell's best-candidate algorithm
-export function generateBlueNoisePoints(
-  width: number,
-  height: number,
-  numPoints: number,
-  candidatesPerPoint: number = 10,
-  seed: number = 42
-): Point[] {
-  const random = createSeededRandom(seed);
-  const points: Point[] = [];
-
-  for (let i = 0; i < numPoints; i++) {
-    let bestCandidate: Point | null = null;
-    let bestDistance = -1;
-
-    // Generate candidates and pick the one farthest from existing points
-    for (let c = 0; c < candidatesPerPoint; c++) {
-      const candidate: Point = {
-        x: random() * width,
-        y: random() * height,
-      };
-
-      const dist = minDistanceToPoints(candidate, points);
-      if (dist > bestDistance) {
-        bestDistance = dist;
-        bestCandidate = candidate;
-      }
-    }
-
-    if (bestCandidate) {
-      points.push(bestCandidate);
-    }
-  }
-
-  return points;
 }
 
 // Convert hex color to RGB
@@ -84,48 +17,37 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
     : { r: 0, g: 0, b: 0 };
 }
 
-// Render blue noise to canvas
-export function renderBlueNoise(
+// Calculate generation parameters
+export function getBlueNoiseParams(
+  dimension: number,
+  pixelSize: number,
+  intensity: number
+) {
+  const gridWidth = Math.ceil(dimension / pixelSize);
+  const gridHeight = Math.ceil(dimension / pixelSize);
+  const maxPoints = gridWidth * gridHeight;
+  const numPoints = Math.floor((intensity / 100) * maxPoints * 0.5);
+  
+  return { gridWidth, gridHeight, numPoints };
+}
+
+// Render pre-generated points to canvas
+export function renderBlueNoisePoints(
   ctx: CanvasRenderingContext2D,
+  points: Point[],
   width: number,
   height: number,
   pixelSize: number,
   foregroundColor: string,
-  backgroundColor: string,
-  intensity: number,
-  seed: number
+  backgroundColor: string
 ): void {
-  // Clear canvas with background color
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, width, height);
-
-  // Calculate grid dimensions
-  const gridWidth = Math.ceil(width / pixelSize);
-  const gridHeight = Math.ceil(height / pixelSize);
-  
-  // Calculate number of points based on intensity (0-100)
-  // Intensity 0 = very sparse, 100 = very dense
-  const maxPoints = gridWidth * gridHeight;
-  const numPoints = Math.floor((intensity / 100) * maxPoints * 0.5);
-
-  if (numPoints === 0) return;
-
-  // Generate blue noise points
-  const points = generateBlueNoisePoints(
-    gridWidth,
-    gridHeight,
-    numPoints,
-    20, // More candidates = better distribution
-    seed
-  );
-
-  // Get foreground color
+  // Get colors
   const fg = hexToRgb(foregroundColor);
-  
-  // Create image data for faster rendering
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const data = imageData.data;
   const bg = hexToRgb(backgroundColor);
+  
+  // Create image data
+  const imageData = ctx.createImageData(width, height);
+  const data = imageData.data;
 
   // Fill background
   for (let i = 0; i < data.length; i += 4) {
