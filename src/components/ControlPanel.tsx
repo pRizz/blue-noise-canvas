@@ -51,12 +51,11 @@ export function ControlPanel({
 }: ControlPanelProps) {
   return (
     <div className="control-panel space-y-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="space-y-4 mb-6">
         <h2 className="text-lg font-semibold text-foreground font-mono">Controls</h2>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             variant="outline"
-            size="sm"
             onClick={onRandomizeSeed}
             className="gap-2"
           >
@@ -64,12 +63,11 @@ export function ControlPanel({
             Randomize
           </Button>
           <Button
-            size="sm"
             onClick={onDownload}
             className="gap-2"
           >
             <Download className="w-4 h-4" />
-            Download PNG
+            Download
           </Button>
         </div>
       </div>
