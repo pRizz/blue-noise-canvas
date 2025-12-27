@@ -18,11 +18,12 @@ Blue noise is a type of noise pattern where the frequency distribution is concen
 ## Features
 
 - **Adjustable Dimensions** – Generate patterns from 128×128 to 1024×1024 pixels
-- **Custom Pixel Size** – Control the size of individual noise points (1-8px)
+- **Custom Pixel Size** – Control the size of individual noise points (1-16px)
+- **Min Spacing Control** – Set minimum distance between points in pixels (1-32px)
 - **Color Customization** – Pick any foreground and background colors
-- **Intensity Control** – Adjust the density of the noise pattern
 - **Reproducible Seeds** – Use specific seeds to regenerate the same pattern
 - **Algorithm Selection** – Choose between two blue noise generation algorithms
+- **Animated Rendering** – Watch points appear progressively with configurable chunk size
 - **Instant Download** – Export your pattern as a PNG file
 
 ## Algorithms
