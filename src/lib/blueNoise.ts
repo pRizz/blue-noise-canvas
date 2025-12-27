@@ -18,15 +18,18 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 // Calculate generation parameters
+// minSpacing: 1-100 where lower = more points (higher density)
 export function getBlueNoiseParams(
   dimension: number,
   pixelSize: number,
-  intensity: number
+  minSpacing: number
 ) {
   const gridWidth = Math.ceil(dimension / pixelSize);
   const gridHeight = Math.ceil(dimension / pixelSize);
   const maxPoints = gridWidth * gridHeight * 5;
-  const numPoints = Math.max(0, Math.min(maxPoints, Math.floor((intensity / 100) * maxPoints)));
+  // Invert: lower spacing = higher density (more points)
+  const density = (101 - minSpacing) / 100; // 1% spacing → 100% density, 100% spacing → 1% density
+  const numPoints = Math.max(1, Math.min(maxPoints, Math.floor(density * maxPoints)));
   
   return { gridWidth, gridHeight, numPoints };
 }
