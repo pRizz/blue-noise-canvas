@@ -79,6 +79,7 @@ class SpatialGrid {
 }
 
 // Generate blue noise points using Mitchell's best-candidate algorithm with spatial hashing
+// Returns points in grid cell coordinates (integers from 0 to width-1, 0 to height-1)
 function generateBlueNoisePoints(
   width: number,
   height: number,
@@ -87,31 +88,56 @@ function generateBlueNoisePoints(
   seed: number
 ): Point[] {
   const random = createSeededRandom(seed);
+  const totalCells = width * height;
+  
+  // Track which cells are filled
+  const filledCells = new Set<string>();
   const points: Point[] = [];
   
-  // Cell size based on expected average distance between points
-  const expectedDist = Math.sqrt((width * height) / Math.max(numPoints, 1));
+  // Cell size for spatial hashing (in grid units)
+  const expectedDist = Math.sqrt(totalCells / Math.max(numPoints, 1));
   const cellSize = Math.max(expectedDist / 2, 1);
   const grid = new SpatialGrid(width, height, cellSize);
 
-  for (let i = 0; i < numPoints; i++) {
+  for (let i = 0; i < numPoints && filledCells.size < totalCells; i++) {
     let bestCandidate: Point | null = null;
     let bestDistance = -1;
 
+    // Try multiple candidates to find one that maximizes distance to existing points
     for (let c = 0; c < candidatesPerPoint; c++) {
-      const candidate: Point = {
-        x: random() * width,
-        y: random() * height,
-      };
-
+      // Generate a random cell position
+      const cellX = Math.floor(random() * width);
+      const cellY = Math.floor(random() * height);
+      const cellKey = `${cellX},${cellY}`;
+      
+      // Skip if this cell is already filled
+      if (filledCells.has(cellKey)) continue;
+      
+      const candidate: Point = { x: cellX, y: cellY };
       const dist = points.length === 0 ? Infinity : grid.getMinDistance(candidate);
+      
       if (dist > bestDistance) {
         bestDistance = dist;
         bestCandidate = candidate;
       }
     }
 
+    // If no valid candidate found (all candidates hit filled cells), find any empty cell
+    if (!bestCandidate) {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const cellX = Math.floor(random() * width);
+        const cellY = Math.floor(random() * height);
+        const cellKey = `${cellX},${cellY}`;
+        if (!filledCells.has(cellKey)) {
+          bestCandidate = { x: cellX, y: cellY };
+          break;
+        }
+      }
+    }
+
     if (bestCandidate) {
+      const cellKey = `${bestCandidate.x},${bestCandidate.y}`;
+      filledCells.add(cellKey);
       points.push(bestCandidate);
       grid.add(bestCandidate);
     }
