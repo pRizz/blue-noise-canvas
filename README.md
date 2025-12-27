@@ -22,15 +22,26 @@ Blue noise is a type of noise pattern where the frequency distribution is concen
 - **Color Customization** – Pick any foreground and background colors
 - **Intensity Control** – Adjust the density of the noise pattern
 - **Reproducible Seeds** – Use specific seeds to regenerate the same pattern
+- **Algorithm Selection** – Choose between two blue noise generation algorithms
 - **Instant Download** – Export your pattern as a PNG file
 
-## Algorithm
+## Algorithms
 
-This generator uses **Mitchell's Best-Candidate Algorithm**, which produces high-quality blue noise by:
+This generator supports two blue noise generation algorithms:
 
-1. Generating multiple candidate points for each new sample
-2. Selecting the candidate that is farthest from all existing points
-3. This process naturally creates the even spacing characteristic of blue noise
+### Bridson Poisson Disk Sampling (Default)
+
+- **Time Complexity**: O(n) – much faster for large patterns
+- Uses a background grid for efficient neighbor lookups
+- Generates points within an annulus around existing points
+- Great for real-time generation and larger canvases
+
+### Mitchell's Best-Candidate Algorithm
+
+- **Time Complexity**: O(n²) – slower but may produce slightly higher quality results
+- Generates multiple candidate points for each new sample
+- Selects the candidate that is farthest from all existing points
+- Better for smaller patterns where quality is paramount
 
 ## Tech Stack
 
