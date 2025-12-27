@@ -6,6 +6,7 @@ interface Point {
 }
 
 export type Algorithm = 'mitchell' | 'bridson';
+export type { Algorithm as AlgorithmType };
 
 interface UseBlueNoiseWorkerOptions {
   gridWidth: number;
