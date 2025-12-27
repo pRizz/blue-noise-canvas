@@ -56,6 +56,10 @@ npm install
 npm run dev
 ```
 
+## Known Issues
+
+- **High intensity fill** – At very high intensities (close to 100%), the canvas may not fill completely. This is due to the probabilistic nature of the best-candidate algorithm when searching for empty cells at high densities.
+
 ## License
 
 This project is free and open source under the [MIT License](LICENSE).
