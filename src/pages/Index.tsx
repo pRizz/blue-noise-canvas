@@ -19,7 +19,7 @@ const Index = () => {
   const [algorithm, setAlgorithm] = useState<Algorithm>('bridson');
   const [pointCount, setPointCount] = useState(0);
   const [animateRender, setAnimateRender] = useState(true);
-  const [chunkSize, setChunkSize] = useState(25);
+  const [chunkSize, setChunkSize] = useState(150);
   
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 

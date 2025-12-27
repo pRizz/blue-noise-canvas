@@ -253,7 +253,7 @@ export function ControlPanel({
               value={[chunkSize]}
               onValueChange={([value]) => onChunkSizeChange(value)}
               min={5}
-              max={200}
+              max={1000}
               step={5}
               className="w-full"
             />
