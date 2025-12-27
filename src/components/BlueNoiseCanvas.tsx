@@ -1,5 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { renderBlueNoise } from '@/lib/blueNoise';
+import { useEffect, useRef, useMemo } from 'react';
+import { getBlueNoiseParams, renderBlueNoisePoints } from '@/lib/blueNoise';
+import { useBlueNoiseWorker } from '@/hooks/useBlueNoiseWorker';
 
 interface BlueNoiseCanvasProps {
   dimension: number;
@@ -22,33 +23,43 @@ export function BlueNoiseCanvas({
 }: BlueNoiseCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const render = useCallback(() => {
+  // Calculate generation parameters
+  const { gridWidth, gridHeight, numPoints } = useMemo(
+    () => getBlueNoiseParams(dimension, pixelSize, intensity),
+    [dimension, pixelSize, intensity]
+  );
+
+  // Generate points in web worker
+  const { points, isGenerating } = useBlueNoiseWorker({
+    gridWidth,
+    gridHeight,
+    numPoints,
+    seed,
+  });
+
+  // Render points to canvas when they change or colors change
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    renderBlueNoise(
+    renderBlueNoisePoints(
       ctx,
+      points,
       dimension,
       dimension,
       pixelSize,
       foregroundColor,
-      backgroundColor,
-      intensity,
-      seed
+      backgroundColor
     );
 
     onCanvasReady(canvas);
-  }, [dimension, pixelSize, foregroundColor, backgroundColor, intensity, seed, onCanvasReady]);
-
-  useEffect(() => {
-    render();
-  }, [render]);
+  }, [points, dimension, pixelSize, foregroundColor, backgroundColor, onCanvasReady]);
 
   return (
-    <div className="canvas-container transition-glow">
+    <div className="canvas-container transition-glow relative">
       <canvas
         ref={canvasRef}
         width={dimension}
@@ -56,6 +67,13 @@ export function BlueNoiseCanvas({
         className="block max-w-full h-auto"
         style={{ imageRendering: 'pixelated' }}
       />
+      {isGenerating && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+          <div className="text-sm font-mono text-muted-foreground animate-pulse">
+            Generating...
+          </div>
+        </div>
+      )}
     </div>
   );
 }
