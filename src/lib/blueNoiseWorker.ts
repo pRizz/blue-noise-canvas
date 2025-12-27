@@ -154,27 +154,83 @@ function generateMitchellPoints(
 }
 
 // ============= BRIDSON'S POISSON DISK SAMPLING =============
-// O(n) expected time complexity - adapted for discrete grid output
+// Pure continuous Poisson disk sampling with binary search for r to hit target count (Option B2)
 function generateBridsonPoints(
   width: number,
   height: number,
   numPoints: number,
   seed: number
 ): Point[] {
-  const random = createSeededRandom(seed);
-  const totalCells = width * height;
-  
   if (numPoints <= 0 || width <= 0 || height <= 0) return [];
   
-  // Clamp numPoints to totalCells
+  const totalCells = width * height;
   const targetPoints = Math.min(numPoints, totalCells);
-  
-  // Calculate minimum distance r based on desired point count
-  // We want points spread across the entire grid, so r should be based on grid dimensions
-  const avgSpacing = Math.sqrt(totalCells / targetPoints);
-  const r = avgSpacing * 0.9; // Slightly smaller to allow more points
-  
   const k = 30; // attempts per active point
+  
+  // Binary search for optimal r that yields approximately targetPoints
+  // Start with theoretical estimate
+  const area = width * height;
+  const theoreticalDensity = 0.6; // Poisson disk packing is ~60% of max
+  let rMin = 0.5;
+  let rMax = Math.sqrt(area / Math.max(targetPoints * theoreticalDensity, 1)) * 2;
+  
+  let bestPoints: Point[] = [];
+  let bestDiff = Infinity;
+  
+  // Binary search iterations (converges quickly)
+  const maxIterations = 8;
+  
+  for (let iter = 0; iter < maxIterations; iter++) {
+    const r = (rMin + rMax) / 2;
+    const points = runBridson(width, height, r, k, seed + iter * 1000);
+    
+    const diff = Math.abs(points.length - targetPoints);
+    
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestPoints = points;
+    }
+    
+    // If we're close enough, stop
+    if (diff <= Math.max(1, targetPoints * 0.05)) {
+      break;
+    }
+    
+    if (points.length < targetPoints) {
+      // Need smaller r to fit more points
+      rMax = r;
+    } else {
+      // Need larger r to fit fewer points
+      rMin = r;
+    }
+  }
+  
+  // Return points snapped to pixel grid (for rendering)
+  // We do this AFTER Bridson completes to preserve the min-distance property during generation
+  const uniquePixels = new Map<string, Point>();
+  for (const p of bestPoints) {
+    const px = Math.floor(p.x);
+    const py = Math.floor(p.y);
+    if (px >= 0 && px < width && py >= 0 && py < height) {
+      const key = `${px},${py}`;
+      if (!uniquePixels.has(key)) {
+        uniquePixels.set(key, { x: px, y: py });
+      }
+    }
+  }
+  
+  return Array.from(uniquePixels.values());
+}
+
+// Core Bridson algorithm - pure continuous Poisson disk sampling
+function runBridson(
+  width: number,
+  height: number,
+  r: number,
+  k: number,
+  seed: number
+): Point[] {
+  const random = createSeededRandom(seed);
   
   const cellSize = r / Math.SQRT2;
   const gridW = Math.ceil(width / cellSize);
@@ -184,9 +240,6 @@ function generateBridsonPoints(
   const grid = new Int32Array(gridW * gridH).fill(-1);
   const samples: Point[] = [];
   const active: number[] = [];
-  
-  // Track which pixel cells are used (for discrete output)
-  const usedCells = new Set<string>();
   
   function gridIndex(gx: number, gy: number): number {
     return gy * gridW + gx;
@@ -199,7 +252,7 @@ function generateBridsonPoints(
     };
   }
   
-  function insertSample(p: Point): number {
+  function insertSample(p: Point): void {
     const idx = samples.length;
     samples.push(p);
     active.push(idx);
@@ -207,11 +260,6 @@ function generateBridsonPoints(
     if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
       grid[gridIndex(gx, gy)] = idx;
     }
-    // Mark pixel cell as used
-    const pixelX = Math.floor(p.x);
-    const pixelY = Math.floor(p.y);
-    usedCells.add(`${pixelX},${pixelY}`);
-    return idx;
   }
   
   function dist2(a: Point, b: Point): number {
@@ -220,14 +268,12 @@ function generateBridsonPoints(
     return dx * dx + dy * dy;
   }
   
+  // Pure Poisson disk check - no discrete/pixel constraint
   function isFarEnough(p: Point): boolean {
-    // Check if pixel cell is already used
-    const pixelX = Math.floor(p.x);
-    const pixelY = Math.floor(p.y);
-    if (usedCells.has(`${pixelX},${pixelY}`)) return false;
-    
     const { gx, gy } = pointToCell(p);
     const r2 = r * r;
+    
+    // Check ±2 cells (standard for cellSize = r/sqrt(2))
     const x0 = Math.max(0, gx - 2);
     const x1 = Math.min(gridW - 1, gx + 2);
     const y0 = Math.max(0, gy - 2);
@@ -260,18 +306,10 @@ function generateBridsonPoints(
     return p.x >= 0 && p.x < width && p.y >= 0 && p.y < height;
   }
   
-  // Start with multiple seed points spread across the canvas to avoid circular patterns
-  const seedCount = Math.max(1, Math.ceil(Math.sqrt(targetPoints / 10)));
-  for (let i = 0; i < seedCount; i++) {
-    const seedX = random() * width;
-    const seedY = random() * height;
-    const pixelKey = `${Math.floor(seedX)},${Math.floor(seedY)}`;
-    if (!usedCells.has(pixelKey)) {
-      insertSample({ x: seedX, y: seedY });
-    }
-  }
+  // Single seed point (classic Bridson)
+  insertSample({ x: random() * width, y: random() * height });
   
-  while (active.length > 0 && samples.length < targetPoints) {
+  while (active.length > 0) {
     const ai = Math.floor(random() * active.length);
     const sIndex = active[ai];
     const s = samples[sIndex];
@@ -292,19 +330,7 @@ function generateBridsonPoints(
     }
   }
   
-  // Snap continuous coordinates to grid cells for pixel rendering
-  // Deduplicate by pixel position
-  const uniquePoints = new Map<string, Point>();
-  for (const p of samples) {
-    const px = Math.floor(p.x);
-    const py = Math.floor(p.y);
-    const key = `${px},${py}`;
-    if (!uniquePoints.has(key)) {
-      uniquePoints.set(key, { x: px, y: py });
-    }
-  }
-  
-  return Array.from(uniquePoints.values());
+  return samples;
 }
 
 // Worker message handler
