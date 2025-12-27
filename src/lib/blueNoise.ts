@@ -26,7 +26,7 @@ export function getBlueNoiseParams(
   const gridWidth = Math.ceil(dimension / pixelSize);
   const gridHeight = Math.ceil(dimension / pixelSize);
   const maxPoints = gridWidth * gridHeight;
-  const numPoints = Math.floor((intensity / 100) * maxPoints * 0.5);
+  const numPoints = Math.max(0, Math.min(maxPoints, Math.floor((intensity / 100) * maxPoints)));
   
   return { gridWidth, gridHeight, numPoints };
 }
@@ -59,9 +59,10 @@ export function renderBlueNoisePoints(
 
   // Draw points as pixels
   for (const point of points) {
-    // Points are in grid coordinates (0 to gridWidth/gridHeight), convert to canvas pixels
-    const startX = Math.floor(point.x * pixelSize);
-    const startY = Math.floor(point.y * pixelSize);
+    // Points are in grid coordinates (0 to gridWidth/gridHeight).
+    // Snap to a grid cell so intensity maps 1:1 to filled cells.
+    const startX = Math.floor(point.x) * pixelSize;
+    const startY = Math.floor(point.y) * pixelSize;
 
     for (let py = 0; py < pixelSize && startY + py < height; py++) {
       for (let px = 0; px < pixelSize && startX + px < width; px++) {
