@@ -2,6 +2,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Download, RefreshCw, Shuffle } from 'lucide-react';
 import {
   Select,
@@ -20,6 +21,8 @@ interface ControlPanelProps {
   intensity: number;
   seed: number;
   algorithm: Algorithm;
+  animateRender: boolean;
+  chunkSize: number;
   onDimensionChange: (value: number) => void;
   onPixelSizeChange: (value: number) => void;
   onForegroundColorChange: (value: string) => void;
@@ -27,6 +30,8 @@ interface ControlPanelProps {
   onIntensityChange: (value: number) => void;
   onSeedChange: (value: number) => void;
   onAlgorithmChange: (value: Algorithm) => void;
+  onAnimateRenderChange: (value: boolean) => void;
+  onChunkSizeChange: (value: number) => void;
   onRandomizeSeed: () => void;
   onDownload: () => void;
 }
@@ -39,6 +44,8 @@ export function ControlPanel({
   intensity,
   seed,
   algorithm,
+  animateRender,
+  chunkSize,
   onDimensionChange,
   onPixelSizeChange,
   onForegroundColorChange,
@@ -46,6 +53,8 @@ export function ControlPanel({
   onIntensityChange,
   onSeedChange,
   onAlgorithmChange,
+  onAnimateRenderChange,
+  onChunkSizeChange,
   onRandomizeSeed,
   onDownload,
 }: ControlPanelProps) {
@@ -217,6 +226,42 @@ export function ControlPanel({
             placeholder="#ffffff"
           />
         </div>
+      </div>
+
+      {/* Animation Settings */}
+      <div className="space-y-4 pt-4 border-t border-border/40">
+        <h3 className="text-sm font-medium text-foreground font-mono">Render Animation</h3>
+        
+        <div className="flex items-center gap-3">
+          <Checkbox
+            id="animateRender"
+            checked={animateRender}
+            onCheckedChange={(checked) => onAnimateRenderChange(checked === true)}
+          />
+          <Label htmlFor="animateRender" className="text-sm text-muted-foreground cursor-pointer">
+            Animate point rendering
+          </Label>
+        </div>
+
+        {animateRender && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm text-muted-foreground font-mono">Chunk Size</Label>
+              <span className="text-sm text-foreground font-mono">{chunkSize} pts/frame</span>
+            </div>
+            <Slider
+              value={[chunkSize]}
+              onValueChange={([value]) => onChunkSizeChange(value)}
+              min={5}
+              max={200}
+              step={5}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Points rendered per animation frame
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

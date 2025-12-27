@@ -18,6 +18,8 @@ const Index = () => {
   const [seed, setSeed] = useState(42);
   const [algorithm, setAlgorithm] = useState<Algorithm>('bridson');
   const [pointCount, setPointCount] = useState(0);
+  const [animateRender, setAnimateRender] = useState(true);
+  const [chunkSize, setChunkSize] = useState(25);
   
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -71,6 +73,8 @@ const Index = () => {
               intensity={intensity}
               seed={seed}
               algorithm={algorithm}
+              animateRender={animateRender}
+              chunkSize={chunkSize}
               onCanvasReady={handleCanvasReady}
               onPointCountChange={setPointCount}
             />
@@ -97,6 +101,8 @@ const Index = () => {
               intensity={intensity}
               seed={seed}
               algorithm={algorithm}
+              animateRender={animateRender}
+              chunkSize={chunkSize}
               onDimensionChange={setDimension}
               onPixelSizeChange={setPixelSize}
               onForegroundColorChange={setForegroundColor}
@@ -104,6 +110,8 @@ const Index = () => {
               onIntensityChange={setIntensity}
               onSeedChange={setSeed}
               onAlgorithmChange={setAlgorithm}
+              onAnimateRenderChange={setAnimateRender}
+              onChunkSizeChange={setChunkSize}
               onRandomizeSeed={handleRandomizeSeed}
               onDownload={handleDownload}
             />
