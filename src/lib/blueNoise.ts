@@ -18,18 +18,24 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 // Calculate generation parameters
-// minSpacing: 1-100 where lower = more points (higher density)
+// minSpacingPx: minimum distance between points in pixels
 export function getBlueNoiseParams(
   dimension: number,
   pixelSize: number,
-  minSpacing: number
+  minSpacingPx: number
 ) {
   const gridWidth = Math.ceil(dimension / pixelSize);
   const gridHeight = Math.ceil(dimension / pixelSize);
-  const maxPoints = gridWidth * gridHeight * 5;
-  // Invert: lower spacing = higher density (more points)
-  const density = (101 - minSpacing) / 100; // 1% spacing → 100% density, 100% spacing → 1% density
-  const numPoints = Math.max(1, Math.min(maxPoints, Math.floor(density * maxPoints)));
+  const totalCells = gridWidth * gridHeight;
+  
+  // Convert pixel spacing to grid units
+  const spacingInGridUnits = minSpacingPx / pixelSize;
+  
+  // Estimate max points based on Poisson disk packing (~60% efficiency)
+  // Area per point ≈ π * (r/2)² for Poisson disk
+  const areaPerPoint = Math.PI * Math.pow(spacingInGridUnits / 2, 2);
+  const estimatedPoints = Math.floor(totalCells / Math.max(areaPerPoint, 0.1));
+  const numPoints = Math.max(1, Math.min(totalCells * 5, estimatedPoints));
   
   return { gridWidth, gridHeight, numPoints };
 }
