@@ -130,10 +130,10 @@ export function ControlPanel({
         />
       </div>
 
-      {/* Intensity */}
+      {/* Min Spacing */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-muted-foreground font-mono">Intensity</Label>
+          <Label className="text-sm text-muted-foreground font-mono">Min Spacing</Label>
           <span className="text-sm text-foreground font-mono">{intensity}%</span>
         </div>
         <Slider
@@ -144,6 +144,9 @@ export function ControlPanel({
           step={1}
           className="w-full"
         />
+        <p className="text-xs text-muted-foreground">
+          Lower spacing = more points (higher density)
+        </p>
       </div>
 
       {/* Seed */}
