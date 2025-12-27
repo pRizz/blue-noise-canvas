@@ -11,6 +11,7 @@ interface BlueNoiseCanvasProps {
   seed: number;
   algorithm: Algorithm;
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
+  onPointCountChange?: (count: number) => void;
 }
 
 export function BlueNoiseCanvas({
@@ -22,6 +23,7 @@ export function BlueNoiseCanvas({
   seed,
   algorithm,
   onCanvasReady,
+  onPointCountChange,
 }: BlueNoiseCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -59,7 +61,8 @@ export function BlueNoiseCanvas({
     );
 
     onCanvasReady(canvas);
-  }, [points, dimension, pixelSize, foregroundColor, backgroundColor, onCanvasReady]);
+    onPointCountChange?.(points.length);
+  }, [points, dimension, pixelSize, foregroundColor, backgroundColor, onCanvasReady, onPointCountChange]);
 
   return (
     <div className="canvas-container transition-glow relative">
