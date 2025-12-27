@@ -25,7 +25,7 @@ export function getBlueNoiseParams(
 ) {
   const gridWidth = Math.ceil(dimension / pixelSize);
   const gridHeight = Math.ceil(dimension / pixelSize);
-  const maxPoints = gridWidth * gridHeight;
+  const maxPoints = gridWidth * gridHeight * 5;
   const numPoints = Math.max(0, Math.min(maxPoints, Math.floor((intensity / 100) * maxPoints)));
   
   return { gridWidth, gridHeight, numPoints };
