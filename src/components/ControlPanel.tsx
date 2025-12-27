@@ -3,6 +3,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Download, RefreshCw, Shuffle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { Algorithm } from '@/hooks/useBlueNoiseWorker';
 
 interface ControlPanelProps {
   dimension: number;
@@ -11,12 +19,14 @@ interface ControlPanelProps {
   backgroundColor: string;
   intensity: number;
   seed: number;
+  algorithm: Algorithm;
   onDimensionChange: (value: number) => void;
   onPixelSizeChange: (value: number) => void;
   onForegroundColorChange: (value: string) => void;
   onBackgroundColorChange: (value: string) => void;
   onIntensityChange: (value: number) => void;
   onSeedChange: (value: number) => void;
+  onAlgorithmChange: (value: Algorithm) => void;
   onRandomizeSeed: () => void;
   onDownload: () => void;
 }
@@ -28,12 +38,14 @@ export function ControlPanel({
   backgroundColor,
   intensity,
   seed,
+  algorithm,
   onDimensionChange,
   onPixelSizeChange,
   onForegroundColorChange,
   onBackgroundColorChange,
   onIntensityChange,
   onSeedChange,
+  onAlgorithmChange,
   onRandomizeSeed,
   onDownload,
 }: ControlPanelProps) {
@@ -60,6 +72,30 @@ export function ControlPanel({
             Download PNG
           </Button>
         </div>
+      </div>
+
+      {/* Algorithm */}
+      <div className="space-y-3">
+        <Label className="text-sm text-muted-foreground font-mono">Algorithm</Label>
+        <Select value={algorithm} onValueChange={(v) => onAlgorithmChange(v as Algorithm)}>
+          <SelectTrigger className="w-full font-mono">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="mitchell">
+              <div className="flex flex-col items-start">
+                <span>Mitchell's Best-Candidate</span>
+                <span className="text-xs text-muted-foreground">O(n²) · Higher quality</span>
+              </div>
+            </SelectItem>
+            <SelectItem value="bridson">
+              <div className="flex flex-col items-start">
+                <span>Bridson Poisson Disk</span>
+                <span className="text-xs text-muted-foreground">O(n) · Much faster</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Dimension */}

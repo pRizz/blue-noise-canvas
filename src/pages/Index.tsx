@@ -2,6 +2,12 @@ import { useState, useCallback, useRef } from 'react';
 import { BlueNoiseCanvas } from '@/components/BlueNoiseCanvas';
 import { ControlPanel } from '@/components/ControlPanel';
 import { toast } from 'sonner';
+import type { Algorithm } from '@/hooks/useBlueNoiseWorker';
+
+const ALGORITHM_NAMES: Record<Algorithm, string> = {
+  mitchell: "Mitchell's best-candidate algorithm",
+  bridson: "Bridson Poisson disk sampling",
+};
 
 const Index = () => {
   const [dimension, setDimension] = useState(512);
@@ -10,6 +16,7 @@ const Index = () => {
   const [backgroundColor, setBackgroundColor] = useState('#0a0f14');
   const [intensity, setIntensity] = useState(50);
   const [seed, setSeed] = useState(42);
+  const [algorithm, setAlgorithm] = useState<Algorithm>('bridson');
   
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -47,7 +54,7 @@ const Index = () => {
             Blue Noise Generator
           </h1>
           <p className="text-muted-foreground">
-            Generate high-quality blue noise patterns using Mitchell's best-candidate algorithm
+            Generate high-quality blue noise patterns using {ALGORITHM_NAMES[algorithm]}
           </p>
         </header>
 
@@ -62,6 +69,7 @@ const Index = () => {
               backgroundColor={backgroundColor}
               intensity={intensity}
               seed={seed}
+              algorithm={algorithm}
               onCanvasReady={handleCanvasReady}
             />
             
@@ -84,12 +92,14 @@ const Index = () => {
               backgroundColor={backgroundColor}
               intensity={intensity}
               seed={seed}
+              algorithm={algorithm}
               onDimensionChange={setDimension}
               onPixelSizeChange={setPixelSize}
               onForegroundColorChange={setForegroundColor}
               onBackgroundColorChange={setBackgroundColor}
               onIntensityChange={setIntensity}
               onSeedChange={setSeed}
+              onAlgorithmChange={setAlgorithm}
               onRandomizeSeed={handleRandomizeSeed}
               onDownload={handleDownload}
             />

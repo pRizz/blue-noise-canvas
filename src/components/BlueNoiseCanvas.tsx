@@ -1,6 +1,6 @@
 import { useEffect, useRef, useMemo } from 'react';
 import { getBlueNoiseParams, renderBlueNoisePoints } from '@/lib/blueNoise';
-import { useBlueNoiseWorker } from '@/hooks/useBlueNoiseWorker';
+import { useBlueNoiseWorker, Algorithm } from '@/hooks/useBlueNoiseWorker';
 
 interface BlueNoiseCanvasProps {
   dimension: number;
@@ -9,6 +9,7 @@ interface BlueNoiseCanvasProps {
   backgroundColor: string;
   intensity: number;
   seed: number;
+  algorithm: Algorithm;
   onCanvasReady: (canvas: HTMLCanvasElement) => void;
 }
 
@@ -19,6 +20,7 @@ export function BlueNoiseCanvas({
   backgroundColor,
   intensity,
   seed,
+  algorithm,
   onCanvasReady,
 }: BlueNoiseCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,6 +37,7 @@ export function BlueNoiseCanvas({
     gridHeight,
     numPoints,
     seed,
+    algorithm,
   });
 
   // Render points to canvas when they change or colors change
