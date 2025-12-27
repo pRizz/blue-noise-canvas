@@ -5,12 +5,15 @@ interface Point {
   y: number;
 }
 
+export type Algorithm = 'mitchell' | 'bridson';
+
 interface UseBlueNoiseWorkerOptions {
   gridWidth: number;
   gridHeight: number;
   numPoints: number;
   seed: number;
   candidatesPerPoint?: number;
+  algorithm: Algorithm;
 }
 
 export function useBlueNoiseWorker({
@@ -19,6 +22,7 @@ export function useBlueNoiseWorker({
   numPoints,
   seed,
   candidatesPerPoint = 20,
+  algorithm,
 }: UseBlueNoiseWorkerOptions) {
   const [points, setPoints] = useState<Point[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,6 +50,7 @@ export function useBlueNoiseWorker({
           numPoints: pending.numPoints,
           candidatesPerPoint: pending.candidatesPerPoint,
           seed: pending.seed,
+          algorithm: pending.algorithm,
         });
         setIsGenerating(true);
       }
@@ -63,7 +68,7 @@ export function useBlueNoiseWorker({
       return;
     }
 
-    const params = { gridWidth, gridHeight, numPoints, seed, candidatesPerPoint };
+    const params = { gridWidth, gridHeight, numPoints, seed, candidatesPerPoint, algorithm };
 
     if (isGenerating) {
       // Queue the latest request, discarding any previous pending request
@@ -75,14 +80,15 @@ export function useBlueNoiseWorker({
         numPoints,
         candidatesPerPoint,
         seed,
+        algorithm,
       });
       setIsGenerating(true);
     }
-  }, [gridWidth, gridHeight, numPoints, seed, candidatesPerPoint, isGenerating]);
+  }, [gridWidth, gridHeight, numPoints, seed, candidatesPerPoint, algorithm, isGenerating]);
 
   useEffect(() => {
     generate();
-  }, [gridWidth, gridHeight, numPoints, seed, candidatesPerPoint]);
+  }, [gridWidth, gridHeight, numPoints, seed, candidatesPerPoint, algorithm]);
 
   return { points, isGenerating };
 }
