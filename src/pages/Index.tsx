@@ -14,7 +14,7 @@ const Index = () => {
   const [pixelSize, setPixelSize] = useState(2);
   const [foregroundColor, setForegroundColor] = useState('#00d4ff');
   const [backgroundColor, setBackgroundColor] = useState('#0a0f14');
-  const [intensity, setIntensity] = useState(50);
+  const [intensity, setIntensity] = useState(4); // Min spacing in pixels
   const [seed, setSeed] = useState(42);
   const [algorithm, setAlgorithm] = useState<Algorithm>('bridson');
   const [pointCount, setPointCount] = useState(0);

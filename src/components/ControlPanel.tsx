@@ -134,18 +134,18 @@ export function ControlPanel({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-sm text-muted-foreground font-mono">Min Spacing</Label>
-          <span className="text-sm text-foreground font-mono">{intensity}%</span>
+          <span className="text-sm text-foreground font-mono">{intensity}px</span>
         </div>
         <Slider
           value={[intensity]}
           onValueChange={([value]) => onIntensityChange(value)}
           min={1}
-          max={100}
-          step={1}
+          max={32}
+          step={0.5}
           className="w-full"
         />
         <p className="text-xs text-muted-foreground">
-          Lower spacing = more points (higher density)
+          Minimum distance between points in pixels
         </p>
       </div>
 
