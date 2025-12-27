@@ -59,8 +59,9 @@ export function renderBlueNoisePoints(
 
   // Draw points as pixels
   for (const point of points) {
-    const startX = Math.floor(point.x) * pixelSize;
-    const startY = Math.floor(point.y) * pixelSize;
+    // Points are in grid coordinates (0 to gridWidth/gridHeight), convert to canvas pixels
+    const startX = Math.floor(point.x * pixelSize);
+    const startY = Math.floor(point.y * pixelSize);
 
     for (let py = 0; py < pixelSize && startY + py < height; py++) {
       for (let px = 0; px < pixelSize && startX + px < width; px++) {
