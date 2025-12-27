@@ -74,10 +74,9 @@ export function BlueNoiseCanvas({
         style={{ imageRendering: 'pixelated' }}
       />
       {isGenerating && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm">
-          <div className="text-sm font-mono text-muted-foreground animate-pulse">
-            Generating...
-          </div>
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm">
+          <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-muted-foreground">Generating</span>
         </div>
       )}
     </div>
